@@ -6,6 +6,12 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages
 
+with open('requirements.txt') as f:
+    dependencies = f.read().splitlines()
+
+with open('test-requirements.txt') as f:
+    test_dependencies = f.read().splitlines()
+
 setup(
     name='pywebhdfs',
     version='0.2.3',
@@ -13,16 +19,8 @@ setup(
     author='Steven D. Gonzales',
     author_email='stevendgonzales@gmail.com',
     url='https://github.com/pywebhdfs/pywebhdfs',
-    tests_require=[
-        "mock",
-        "nose",
-        "nosexcover",
-        "testtools",
-        "tox"
-    ],
-    install_requires=[
-        "requests"
-    ],
+    tests_require=test_dependencies,
+    install_requires=dependencies,
     test_suite='nose.collector',
     zip_safe=False,
     include_package_data=True,

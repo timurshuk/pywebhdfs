@@ -10,4 +10,5 @@ nosetests.xml
 pywebhdfs/coverage.xml
 cache-store
 cache-config
+*.egg
 *~
