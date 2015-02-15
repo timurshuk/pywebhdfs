@@ -18,7 +18,7 @@ setup(
     description='Python wrapper for the Hadoop WebHDFS REST API',
     author='Steven D. Gonzales',
     author_email='stevendgonzales@gmail.com',
-    url='https://github.com/ProjectMeniscus/pywebhdfs',
+    url='https://github.com/pywebhdfs/pywebhdfs',
     tests_require=test_dependencies,
     install_requires=dependencies,
     test_suite='nose.collector',
