@@ -1,5 +1,7 @@
 # PyWebHDFS
 
+[![Build Status](https://travis-ci.org/pywebhdfs/pywebhdfs.svg?branch=master)](https://travis-ci.org/pywebhdfs/pywebhdfs)
+
 PyWebHDFS is a Python wrapper for the Hadoop WebHDFS REST API.
 
 Many of the current Python HDFS clients rely on Hadoop Streaming which requires Java to be installed on the local machine. The other option for interacting with HDFS is to use the WebHDFS REST API.  The purpose of this project is to simplify interactions with the WebHDFS API.  The PyWebHdfs client will implement the exact functions available in the WebHDFS REST API and behave in a manner consistent with the API.
