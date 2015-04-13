@@ -1,28 +1,13 @@
-# -*- coding: utf-8 -*-
+import setuptools
+
+# In python < 2.7.4, a lazy loading of package `pbr` will break
+# setuptools if some other modules registered functions in `atexit`.
+# solution from: http://bugs.python.org/issue15881#msg170215
 try:
-    from setuptools import setup, find_packages
+    import multiprocessing  # noqa
 except ImportError:
-    from ez_setup import use_setuptools
-    use_setuptools()
-    from setuptools import setup, find_packages
+    pass
 
-with open('requirements.txt') as f:
-    dependencies = f.read().splitlines()
-
-with open('test-requirements.txt') as f:
-    test_dependencies = f.read().splitlines()
-
-setup(
-    name='pywebhdfs',
-    version='0.2.3',
-    description='Python wrapper for the Hadoop WebHDFS REST API',
-    author='Steven D. Gonzales',
-    author_email='stevendgonzales@gmail.com',
-    url='https://github.com/pywebhdfs/pywebhdfs',
-    tests_require=test_dependencies,
-    install_requires=dependencies,
-    test_suite='nose.collector',
-    zip_safe=False,
-    include_package_data=True,
-    packages=find_packages(exclude=['ez_setup'])
-)
+setuptools.setup(
+    setup_requires=['pbr'],
+    pbr=True)
