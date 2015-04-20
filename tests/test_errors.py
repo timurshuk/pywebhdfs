@@ -15,4 +15,4 @@ class WhenTestingErrors(unittest.TestCase):
     def test_pywebhdfs_exception(self):
         msg = 'message'
         ex = errors.PyWebHdfsException(msg=msg)
-        self.assertIs(msg, ex.message)
+        self.assertIs(msg, ex.msg)
