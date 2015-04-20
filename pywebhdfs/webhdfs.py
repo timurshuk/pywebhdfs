@@ -1,4 +1,4 @@
-import httplib
+from six.moves import http_client
 
 import requests
 try:
@@ -80,7 +80,7 @@ class PyWebHdfsClient(object):
         uri = self._create_uri(path, operations.CREATE, **optional_args)
         init_response = requests.put(uri, allow_redirects=False)
 
-        if not init_response.status_code == httplib.TEMPORARY_REDIRECT:
+        if not init_response.status_code == http_client.TEMPORARY_REDIRECT:
             _raise_pywebhdfs_exception(
                 init_response.status_code, init_response.content)
 
@@ -92,7 +92,7 @@ class PyWebHdfsClient(object):
             uri, data=file_data,
             headers={'content-type': 'application/octet-stream'})
 
-        if not response.status_code == httplib.CREATED:
+        if not response.status_code == http_client.CREATED:
             _raise_pywebhdfs_exception(response.status_code, response.content)
 
         return True
@@ -135,7 +135,7 @@ class PyWebHdfsClient(object):
         uri = self._create_uri(path, operations.APPEND, **optional_args)
         init_response = requests.post(uri, allow_redirects=False)
 
-        if not init_response.status_code == httplib.TEMPORARY_REDIRECT:
+        if not init_response.status_code == http_client.TEMPORARY_REDIRECT:
             _raise_pywebhdfs_exception(
                 init_response.status_code, init_response.content)
 
@@ -147,7 +147,7 @@ class PyWebHdfsClient(object):
             uri, data=file_data,
             headers={'content-type': 'application/octet-stream'})
 
-        if not response.status_code == httplib.OK:
+        if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
 
         return True
@@ -182,7 +182,7 @@ class PyWebHdfsClient(object):
 
         response = requests.get(uri, allow_redirects=True)
 
-        if not response.status_code == httplib.OK:
+        if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
 
         return response.content
@@ -215,7 +215,7 @@ class PyWebHdfsClient(object):
 
         response = requests.put(uri, allow_redirects=True)
 
-        if not response.status_code == httplib.OK:
+        if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
 
         return True
@@ -245,7 +245,7 @@ class PyWebHdfsClient(object):
 
         response = requests.put(uri, allow_redirects=True)
 
-        if not response.status_code == httplib.OK:
+        if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
 
         return True
@@ -276,7 +276,7 @@ class PyWebHdfsClient(object):
         uri = self._create_uri(path, operations.DELETE, recursive=recursive)
         response = requests.delete(uri, allow_redirects=True)
 
-        if not response.status_code == httplib.OK:
+        if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
 
         return True
@@ -334,7 +334,7 @@ class PyWebHdfsClient(object):
         uri = self._create_uri(path, operations.GETFILESTATUS)
         response = requests.get(uri, allow_redirects=True)
 
-        if not response.status_code == httplib.OK:
+        if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
 
         return response.json()
@@ -390,7 +390,7 @@ class PyWebHdfsClient(object):
         uri = self._create_uri(path, operations.LISTSTATUS)
         response = requests.get(uri, allow_redirects=True)
 
-        if not response.status_code == httplib.OK:
+        if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
 
         return response.json()
@@ -433,13 +433,13 @@ class PyWebHdfsClient(object):
 
 def _raise_pywebhdfs_exception(resp_code, message=None):
 
-    if resp_code == httplib.BAD_REQUEST:
+    if resp_code == http_client.BAD_REQUEST:
         raise errors.BadRequest(msg=message)
-    elif resp_code == httplib.UNAUTHORIZED:
+    elif resp_code == http_client.UNAUTHORIZED:
         raise errors.Unauthorized(msg=message)
-    elif resp_code == httplib.NOT_FOUND:
+    elif resp_code == http_client.NOT_FOUND:
         raise errors.FileNotFound(msg=message)
-    elif resp_code == httplib.METHOD_NOT_ALLOWED:
+    elif resp_code == http_client.METHOD_NOT_ALLOWED:
         raise errors.MethodNotAllowed(msg=message)
     else:
         raise errors.PyWebHdfsException(msg=message)
