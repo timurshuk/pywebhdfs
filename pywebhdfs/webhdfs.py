@@ -339,6 +339,38 @@ class PyWebHdfsClient(object):
 
         return response.json()
 
+    def get_file_checksum(self, path):
+        """
+        Get the file_checksum of a single file on HDFS
+
+        :param path: the HDFS file path without a leading '/'
+
+        The function wraps the WebHDFS REST call:
+
+        GET http://<HOST>:<PORT>/webhdfs/v1/<PATH>?op=GETFILECHECKSUM
+
+        Example for getting file status:
+
+        >>> hdfs = PyWebHdfsClient(host='host',port='50070', user_name='hdfs')
+        >>> my_file = 'user/hdfs/data/myfile.txt'
+        >>> hdfs.get_file_checksum(my_file)
+        {
+            "FileChecksum":{
+                "algorithm": "MD5-of-1MD5-of-512CRC32",
+                "bytes": "000002000000000000000000729a144ad5e9399f70c9bedd7572e6bf00000000",
+                "length": 28
+            }
+        }
+        """
+
+        uri = self._create_uri(path, operations.GETFILECHECKSUM)
+        response = requests.get(uri, allow_redirects=True)
+
+        if not response.status_code == http_client.OK:
+            _raise_pywebhdfs_exception(response.status_code, response.content)
+
+        return response.json()
+
     def list_dir(self, path):
         """
         Get a list of file_status for all files and directories

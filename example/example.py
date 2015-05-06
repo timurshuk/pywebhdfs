@@ -15,7 +15,6 @@ rename_dir = 'user/hdfs/example_rename'
 hdfs = PyWebHdfsClient(host='localhost', port='50070',
                        user_name='hduser')
 
-
 # create a new directory for the example
 print('making new HDFS directory at: {0}\n'.format(example_dir))
 hdfs.make_dir(example_dir)
@@ -31,12 +30,20 @@ hdfs.create_file(example_file, example_data)
 file_status = hdfs.get_file_dir_status(example_file)
 print file_status
 
+# get the checksum for the file
+file_checksum = hdfs.get_file_checksum(example_file)
+print file_checksum
+
 # append to the file created in previous step
 print('appending to file at: {0}\n'.format(example_file))
 hdfs.append_file(example_file, example_data)
 
 file_status = hdfs.get_file_dir_status(example_file)
 print file_status
+
+# checksum reflects file changes
+file_checksum = hdfs.get_file_checksum(example_file)
+print file_checksum
 
 # read in the data for the file
 print('reading data from file at: {0}\n'.format(example_file))
