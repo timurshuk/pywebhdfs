@@ -357,7 +357,7 @@ class PyWebHdfsClient(object):
         {
             "FileChecksum":{
                 "algorithm": "MD5-of-1MD5-of-512CRC32",
-                "bytes": "000002000000000000000000729a144ad5e9399f70c9bedd7572e6bf00000000",
+                "bytes": "000002000000000000000000729a144ad5e9399f70c9bed...",
                 "length": 28
             }
         }
