@@ -26,6 +26,7 @@ operations including:
 #. Rename a File/Directory
 #. Delete a File/Directory
 #. Status of a File/Directory
+#. Checksum of a File
 #. List a Directory
 
 The documentation for the Hadoop WebHDFS REST API can be found at

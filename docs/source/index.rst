@@ -11,4 +11,4 @@ Contents:
  .. toctree::
     :maxdepth: 2
  .. autoclass:: pywebhdfs.webhdfs.PyWebHdfsClient
-    :members:  __init__, create_file, append_file, read_file, make_dir, rename_file_dir, delete_file_dir, get_file_dir_status, list_dir
+    :members:  __init__, create_file, append_file, read_file, make_dir, rename_file_dir, delete_file_dir, get_file_dir_status, get_file_checksum, list_dir

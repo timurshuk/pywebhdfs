@@ -1,11 +1,13 @@
 CHANGES
 =======
 
-* Convert README to RST
+* add GETFILECHECKSUM support
 
-0.2.3
+0.3.0
 -----
 
+* Add Python 3 support
+* Convert README to RST
 * Implement PBR for versioning
 * Restructure test layout
 * Add Daan Debie to AUTHORS file
