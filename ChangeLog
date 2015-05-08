@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* fix linting
 * add GETFILECHECKSUM support
 
 0.3.0
