@@ -27,6 +27,11 @@ class WhenTestingPyWebHdfsConstructor(unittest.TestCase):
         self.assertEqual(port, webhdfs.port)
         self.assertEqual(user_name, webhdfs.user_name)
 
+    def test_init_path_to_hosts_provided(self):
+        path_to_hosts = [('.*', ['localhost'])]
+        webhdfs = PyWebHdfsClient(path_to_hosts=path_to_hosts)
+        self.assertIsNotNone(webhdfs.path_to_hosts)
+
 
 class WhenTestingCreateOperation(unittest.TestCase):
 
@@ -299,6 +304,7 @@ class WhenTestingGetFileStatusOperation(unittest.TestCase):
         for key in result:
             self.assertEqual(result[key], self.file_status[key])
 
+
 class WhenTestingGetFileChecksumOperation(unittest.TestCase):
 
     def setUp(self):
@@ -422,7 +428,7 @@ class WhenTestingCreateUri(unittest.TestCase):
             .format(
                 host=self.host, port=self.port, path=self.path,
                 op=op, user=self.user_name)
-        result = self.webhdfs._create_uri(self.path, op)
+        result = self.webhdfs._create_uri(self.host, self.path, op)
         self.assertEqual(uri, result)
 
     def test_create_uri_with_kwargs(self):
@@ -435,7 +441,8 @@ class WhenTestingCreateUri(unittest.TestCase):
             .format(
                 host=self.host, port=self.port, path=self.path,
                 op=op, key=mykey, val=myval, user=self.user_name)
-        result = self.webhdfs._create_uri(self.path, op, mykey=myval)
+        result = self.webhdfs._create_uri(self.host, self.path, op,
+                                          mykey=myval)
         self.assertEqual(uri, result)
 
     def test_create_uri_with_unicode_path(self):
@@ -450,7 +457,7 @@ class WhenTestingCreateUri(unittest.TestCase):
             .format(
                 host=self.host, port=self.port, path=quoted_path,
                 op=op, key=mykey, val=myval, user=self.user_name)
-        result = self.webhdfs._create_uri(path, op, mykey=myval)
+        result = self.webhdfs._create_uri(self.host, path, op, mykey=myval)
         self.assertEqual(uri, result)
 
 
