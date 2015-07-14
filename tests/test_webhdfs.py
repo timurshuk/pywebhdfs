@@ -203,6 +203,8 @@ class WhenTestingRenameOperation(unittest.TestCase):
         self.path = 'user/hdfs/old_dir'
         self.new_path = '/user/hdfs/new_dir'
         self.response = MagicMock()
+        self.rename = {"boolean": True}
+        self.response.json = MagicMock(return_value=self.rename)
 
     def test_rename_throws_exception_for_not_ok(self):
 
@@ -218,7 +220,7 @@ class WhenTestingRenameOperation(unittest.TestCase):
         self.requests.put.return_value = self.response
         with patch('pywebhdfs.webhdfs.requests', self.requests):
             result = self.webhdfs.rename_file_dir(self.path, self.new_path)
-        self.assertTrue(result)
+        self.assertEqual(result, {"boolean": True})
 
 
 class WhenTestingDeleteOperation(unittest.TestCase):
