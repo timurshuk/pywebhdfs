@@ -471,8 +471,8 @@ class WhenTestingCreateUri(unittest.TestCase):
         op = operations.CREATE
         uri = 'http://{{host}}:{port}/webhdfs/v1/' \
               '{path}?op={op}&user.name={user}'\
-            .format(port=self.port, path=self.path,
-                op=op, user=self.user_name)
+              .format(port=self.port, path=self.path,
+                      op=op, user=self.user_name)
         result = self.webhdfs._create_uri(self.path, op)
         self.assertEqual(uri, result)
 
@@ -483,9 +483,9 @@ class WhenTestingCreateUri(unittest.TestCase):
         uri = 'http://{{host}}:{port}/webhdfs/v1/' \
               '{path}?op={op}&{key}={val}' \
               '&user.name={user}' \
-            .format(
-                port=self.port, path=self.path,
-                op=op, key=mykey, val=myval, user=self.user_name)
+              .format(
+                  port=self.port, path=self.path,
+                  op=op, key=mykey, val=myval, user=self.user_name)
         result = self.webhdfs._create_uri(self.path, op,
                                           mykey=myval)
         self.assertEqual(uri, result)
@@ -499,9 +499,9 @@ class WhenTestingCreateUri(unittest.TestCase):
         uri = 'http://{{host}}:{port}/webhdfs/v1/' \
               '{path}?op={op}&{key}={val}' \
               '&user.name={user}' \
-            .format(
-                port=self.port, path=quoted_path,
-                op=op, key=mykey, val=myval, user=self.user_name)
+              .format(
+                  port=self.port, path=quoted_path,
+                  op=op, key=mykey, val=myval, user=self.user_name)
         result = self.webhdfs._create_uri(path, op, mykey=myval)
         self.assertEqual(uri, result)
 

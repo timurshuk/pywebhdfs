@@ -280,7 +280,6 @@ class PyWebHdfsClient(object):
         >>> hdfs.delete_file_dir(my_file, recursive=True)
         """
 
-
         response = self._resolve_host(requests.delete, True,
                                       path, operations.DELETE,
                                       recursive=recursive)
@@ -515,7 +514,8 @@ class PyWebHdfsClient(object):
         raise errors.CorrespondHostsNotFound(
             msg="Could not find hosts corresponds to /{0}".format(path))
 
-    def _resolve_host(self, req_func, allow_redirect, path, operation, **kwargs):
+    def _resolve_host(self, req_func, allow_redirect,
+                      path, operation, **kwargs):
         """
         internal function used to resolve federation and HA and
         return response of resolved host.
