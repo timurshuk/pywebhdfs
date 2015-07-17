@@ -93,7 +93,7 @@ class PyWebHdfsClient(object):
                 _move_active_host_to_head(hosts, host)
                 break
         else:
-            raise errors.PyWebHdfsException(msg="Could not find active host")
+            raise errors.ActiveHostNotFound(msg="Could not find active host")
 
         if not init_response.status_code == http_client.TEMPORARY_REDIRECT:
             _raise_pywebhdfs_exception(
@@ -157,7 +157,7 @@ class PyWebHdfsClient(object):
                 _move_active_host_to_head(hosts, host)
                 break
         else:
-            raise errors.PyWebHdfsException(msg="Could not find active host")
+            raise errors.ActiveHostNotFound(msg="Could not find active host")
 
         if not init_response.status_code == http_client.TEMPORARY_REDIRECT:
             _raise_pywebhdfs_exception(
@@ -212,7 +212,7 @@ class PyWebHdfsClient(object):
                 _move_active_host_to_head(hosts, host)
                 break
         else:
-            raise errors.PyWebHdfsException(msg="Could not find active host")
+            raise errors.ActiveHostNotFound(msg="Could not find active host")
 
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
@@ -253,7 +253,7 @@ class PyWebHdfsClient(object):
                 _move_active_host_to_head(hosts, host)
                 break
         else:
-            raise errors.PyWebHdfsException(msg="Could not find active host")
+            raise errors.ActiveHostNotFound(msg="Could not find active host")
 
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
@@ -290,7 +290,7 @@ class PyWebHdfsClient(object):
                 _move_active_host_to_head(hosts, host)
                 break
         else:
-            raise errors.PyWebHdfsException(msg="Could not find active host")
+            raise errors.ActiveHostNotFound(msg="Could not find active host")
 
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
@@ -329,7 +329,7 @@ class PyWebHdfsClient(object):
                 _move_active_host_to_head(hosts, host)
                 break
         else:
-            raise errors.PyWebHdfsException(msg="Could not find active host")
+            raise errors.ActiveHostNotFound(msg="Could not find active host")
 
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
@@ -394,7 +394,7 @@ class PyWebHdfsClient(object):
                 _move_active_host_to_head(hosts, host)
                 break
         else:
-            raise errors.PyWebHdfsException(msg="Could not find active host")
+            raise errors.ActiveHostNotFound(msg="Could not find active host")
 
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
@@ -433,7 +433,7 @@ class PyWebHdfsClient(object):
                 _move_active_host_to_head(hosts, host)
                 break
         else:
-            raise errors.PyWebHdfsException(msg="Could not find active host")
+            raise errors.ActiveHostNotFound(msg="Could not find active host")
 
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
@@ -496,7 +496,7 @@ class PyWebHdfsClient(object):
                 _move_active_host_to_head(hosts, host)
                 break
         else:
-            raise errors.PyWebHdfsException(msg="Could not find active host")
+            raise errors.ActiveHostNotFound(msg="Could not find active host")
 
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
@@ -548,7 +548,7 @@ class PyWebHdfsClient(object):
         for path_regexp, hosts in self.path_to_hosts:
             if re.match(path_regexp, path):
                 return hosts
-        raise errors.PyWebHdfsException(
+        raise errors.CorrespondHostsNotFound(
             msg="Could not find hosts corresponds to /{0}".format(path))
 
 

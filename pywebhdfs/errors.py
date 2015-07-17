@@ -19,3 +19,11 @@ class FileNotFound(PyWebHdfsException):
 
 class MethodNotAllowed(PyWebHdfsException):
     pass
+
+
+class ActiveHostNotFound(PyWebHdfsException):
+    pass
+
+
+class CorrespondHostsNotFound(PyWebHdfsException):
+    pass
