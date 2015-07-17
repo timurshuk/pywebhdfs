@@ -84,17 +84,9 @@ class PyWebHdfsClient(object):
         # make the initial CREATE call to the HDFS namenode
         optional_args = kwargs
 
-        hosts = self._resolve_federation(path)
-        for host in hosts:
-            uri = self._create_uri(host, path, operations.CREATE,
-                                   **optional_args)
-            init_response = requests.put(uri, allow_redirects=False)
-            if not _is_standby_exception(init_response):
-                _move_active_host_to_head(hosts, host)
-                break
-        else:
-            raise errors.ActiveHostNotFound(msg="Could not find active host")
-
+        init_response = self._resolve_host(requests.put, False,
+                                           path, operations.CREATE,
+                                           **optional_args)
         if not init_response.status_code == http_client.TEMPORARY_REDIRECT:
             _raise_pywebhdfs_exception(
                 init_response.status_code, init_response.content)
@@ -148,17 +140,9 @@ class PyWebHdfsClient(object):
         # make the initial APPEND call to the HDFS namenode
         optional_args = kwargs
 
-        hosts = self._resolve_federation(path)
-        for host in hosts:
-            uri = self._create_uri(host, path, operations.APPEND,
-                                   **optional_args)
-            init_response = requests.post(uri, allow_redirects=False)
-            if not _is_standby_exception(init_response):
-                _move_active_host_to_head(hosts, host)
-                break
-        else:
-            raise errors.ActiveHostNotFound(msg="Could not find active host")
-
+        init_response = self._resolve_host(requests.post, False,
+                                           path, operations.APPEND,
+                                           **optional_args)
         if not init_response.status_code == http_client.TEMPORARY_REDIRECT:
             _raise_pywebhdfs_exception(
                 init_response.status_code, init_response.content)
@@ -203,17 +187,9 @@ class PyWebHdfsClient(object):
 
         optional_args = kwargs
 
-        hosts = self._resolve_federation(path)
-        for host in hosts:
-            uri = self._create_uri(host, path, operations.OPEN,
-                                   **optional_args)
-            response = requests.get(uri, allow_redirects=True)
-            if not _is_standby_exception(response):
-                _move_active_host_to_head(hosts, host)
-                break
-        else:
-            raise errors.ActiveHostNotFound(msg="Could not find active host")
-
+        response = self._resolve_host(requests.get, True,
+                                      path, operations.OPEN,
+                                      **optional_args)
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
 
@@ -244,17 +220,9 @@ class PyWebHdfsClient(object):
 
         optional_args = kwargs
 
-        hosts = self._resolve_federation(path)
-        for host in hosts:
-            uri = self._create_uri(host, path, operations.MKDIRS,
-                                   **optional_args)
-            response = requests.put(uri, allow_redirects=True)
-            if not _is_standby_exception(response):
-                _move_active_host_to_head(hosts, host)
-                break
-        else:
-            raise errors.ActiveHostNotFound(msg="Could not find active host")
-
+        response = self._resolve_host(requests.put, True,
+                                      path, operations.MKDIRS,
+                                      **optional_args)
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
 
@@ -281,17 +249,9 @@ class PyWebHdfsClient(object):
 
         destination_path = '/' + destination_path.lstrip('/')
 
-        hosts = self._resolve_federation(path)
-        for host in hosts:
-            uri = self._create_uri(host, path, operations.RENAME,
-                                   destination=destination_path)
-            response = requests.put(uri, allow_redirects=True)
-            if not _is_standby_exception(response):
-                _move_active_host_to_head(hosts, host)
-                break
-        else:
-            raise errors.ActiveHostNotFound(msg="Could not find active host")
-
+        response = self._resolve_host(requests.put, True,
+                                      path, operations.RENAME,
+                                      destination=destination_path)
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
 
@@ -320,17 +280,10 @@ class PyWebHdfsClient(object):
         >>> hdfs.delete_file_dir(my_file, recursive=True)
         """
 
-        hosts = self._resolve_federation(path)
-        for host in hosts:
-            uri = self._create_uri(host, path, operations.DELETE,
-                                   recursive=recursive)
-            response = requests.delete(uri, allow_redirects=True)
-            if not _is_standby_exception(response):
-                _move_active_host_to_head(hosts, host)
-                break
-        else:
-            raise errors.ActiveHostNotFound(msg="Could not find active host")
 
+        response = self._resolve_host(requests.delete, True,
+                                      path, operations.DELETE,
+                                      recursive=recursive)
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
 
@@ -386,16 +339,8 @@ class PyWebHdfsClient(object):
         }
         """
 
-        hosts = self._resolve_federation(path)
-        for host in hosts:
-            uri = self._create_uri(host, path, operations.GETFILESTATUS)
-            response = requests.get(uri, allow_redirects=True)
-            if not _is_standby_exception(response):
-                _move_active_host_to_head(hosts, host)
-                break
-        else:
-            raise errors.ActiveHostNotFound(msg="Could not find active host")
-
+        response = self._resolve_host(requests.get, True,
+                                      path, operations.GETFILESTATUS)
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
 
@@ -425,16 +370,8 @@ class PyWebHdfsClient(object):
         }
         """
 
-        hosts = self._resolve_federation(path)
-        for host in hosts:
-            uri = self._create_uri(host, path, operations.GETFILECHECKSUM)
-            response = requests.get(uri, allow_redirects=True)
-            if not _is_standby_exception(response):
-                _move_active_host_to_head(hosts, host)
-                break
-        else:
-            raise errors.ActiveHostNotFound(msg="Could not find active host")
-
+        response = self._resolve_host(requests.get, True,
+                                      path, operations.GETFILECHECKSUM)
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
 
@@ -488,22 +425,14 @@ class PyWebHdfsClient(object):
 
         """
 
-        hosts = self._resolve_federation(path)
-        for host in hosts:
-            uri = self._create_uri(host, path, operations.LISTSTATUS)
-            response = requests.get(uri, allow_redirects=True)
-            if not _is_standby_exception(response):
-                _move_active_host_to_head(hosts, host)
-                break
-        else:
-            raise errors.ActiveHostNotFound(msg="Could not find active host")
-
+        response = self._resolve_host(requests.get, True,
+                                      path, operations.LISTSTATUS)
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
 
         return response.json()
 
-    def _create_uri(self, host, path, operation, **kwargs):
+    def _create_uri(self, path, operation, **kwargs):
         """
         internal function used to construct the WebHDFS request uri based on
         the <PATH>, <OPERATION>, and any provided optional arguments
@@ -530,8 +459,8 @@ class PyWebHdfsClient(object):
             keyword_params = '{params}&{key}={value}'.format(
                 params=keyword_params, key=key, value=value)
 
-        base_uri = 'http://{host}:{port}/webhdfs/v1/'.format(
-            host=host, port=self.port)
+        base_uri = 'http://{{host}}:{port}/webhdfs/v1/'.format(
+            port=self.port)
 
         # build the complete uri from the base uri and all configured params
         uri = '{base_uri}{path}{operation}{keyword_args}{auth}'.format(
@@ -550,6 +479,22 @@ class PyWebHdfsClient(object):
                 return hosts
         raise errors.CorrespondHostsNotFound(
             msg="Could not find hosts corresponds to /{0}".format(path))
+
+    def _resolve_host(self, req_func, allow_redirect, path, operation, **kwargs):
+        """
+        internal function used to resolve federation and HA and
+        return response of resolved host.
+        """
+        uri_without_host = self._create_uri(path, operation, **kwargs)
+        hosts = self._resolve_federation(path)
+        for host in hosts:
+            uri = uri_without_host.format(host=host)
+            response = req_func(uri, allow_redirects=allow_redirect)
+
+            if not _is_standby_exception(response):
+                _move_active_host_to_head(hosts, host)
+                return response
+        raise errors.ActiveHostNotFound(msg="Could not find active host")
 
 
 def _raise_pywebhdfs_exception(resp_code, message=None):

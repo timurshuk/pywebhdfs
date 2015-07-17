@@ -423,25 +423,24 @@ class WhenTestingCreateUri(unittest.TestCase):
 
     def test_create_uri_no_kwargs(self):
         op = operations.CREATE
-        uri = 'http://{host}:{port}/webhdfs/v1/' \
+        uri = 'http://{{host}}:{port}/webhdfs/v1/' \
               '{path}?op={op}&user.name={user}'\
-            .format(
-                host=self.host, port=self.port, path=self.path,
+            .format(port=self.port, path=self.path,
                 op=op, user=self.user_name)
-        result = self.webhdfs._create_uri(self.host, self.path, op)
+        result = self.webhdfs._create_uri(self.path, op)
         self.assertEqual(uri, result)
 
     def test_create_uri_with_kwargs(self):
         op = operations.CREATE
         mykey = 'mykey'
         myval = 'myval'
-        uri = 'http://{host}:{port}/webhdfs/v1/' \
+        uri = 'http://{{host}}:{port}/webhdfs/v1/' \
               '{path}?op={op}&{key}={val}' \
               '&user.name={user}' \
             .format(
-                host=self.host, port=self.port, path=self.path,
+                port=self.port, path=self.path,
                 op=op, key=mykey, val=myval, user=self.user_name)
-        result = self.webhdfs._create_uri(self.host, self.path, op,
+        result = self.webhdfs._create_uri(self.path, op,
                                           mykey=myval)
         self.assertEqual(uri, result)
 
@@ -451,13 +450,13 @@ class WhenTestingCreateUri(unittest.TestCase):
         myval = 'myval'
         path = u'die/Stra\xdfe'
         quoted_path = 'die/Stra%C3%9Fe'
-        uri = 'http://{host}:{port}/webhdfs/v1/' \
+        uri = 'http://{{host}}:{port}/webhdfs/v1/' \
               '{path}?op={op}&{key}={val}' \
               '&user.name={user}' \
             .format(
-                host=self.host, port=self.port, path=quoted_path,
+                port=self.port, path=quoted_path,
                 op=op, key=mykey, val=myval, user=self.user_name)
-        result = self.webhdfs._create_uri(self.host, path, op, mykey=myval)
+        result = self.webhdfs._create_uri(path, op, mykey=myval)
         self.assertEqual(uri, result)
 
 
