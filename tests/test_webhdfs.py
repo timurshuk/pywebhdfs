@@ -27,6 +27,11 @@ class WhenTestingPyWebHdfsConstructor(unittest.TestCase):
         self.assertEqual(port, webhdfs.port)
         self.assertEqual(user_name, webhdfs.user_name)
 
+    def test_init_path_to_hosts_provided(self):
+        path_to_hosts = [('.*', ['localhost'])]
+        webhdfs = PyWebHdfsClient(path_to_hosts=path_to_hosts)
+        self.assertIsNotNone(webhdfs.path_to_hosts)
+
 
 class WhenTestingCreateOperation(unittest.TestCase):
 
@@ -464,11 +469,10 @@ class WhenTestingCreateUri(unittest.TestCase):
 
     def test_create_uri_no_kwargs(self):
         op = operations.CREATE
-        uri = 'http://{host}:{port}/webhdfs/v1/' \
+        uri = 'http://{{host}}:{port}/webhdfs/v1/' \
               '{path}?op={op}&user.name={user}'\
-            .format(
-                host=self.host, port=self.port, path=self.path,
-                op=op, user=self.user_name)
+              .format(port=self.port, path=self.path,
+                      op=op, user=self.user_name)
         result = self.webhdfs._create_uri(self.path, op)
         self.assertEqual(uri, result)
 
@@ -476,13 +480,14 @@ class WhenTestingCreateUri(unittest.TestCase):
         op = operations.CREATE
         mykey = 'mykey'
         myval = 'myval'
-        uri = 'http://{host}:{port}/webhdfs/v1/' \
+        uri = 'http://{{host}}:{port}/webhdfs/v1/' \
               '{path}?op={op}&{key}={val}' \
               '&user.name={user}' \
-            .format(
-                host=self.host, port=self.port, path=self.path,
-                op=op, key=mykey, val=myval, user=self.user_name)
-        result = self.webhdfs._create_uri(self.path, op, mykey=myval)
+              .format(
+                  port=self.port, path=self.path,
+                  op=op, key=mykey, val=myval, user=self.user_name)
+        result = self.webhdfs._create_uri(self.path, op,
+                                          mykey=myval)
         self.assertEqual(uri, result)
 
     def test_create_uri_with_unicode_path(self):
@@ -491,12 +496,12 @@ class WhenTestingCreateUri(unittest.TestCase):
         myval = 'myval'
         path = u'die/Stra\xdfe'
         quoted_path = 'die/Stra%C3%9Fe'
-        uri = 'http://{host}:{port}/webhdfs/v1/' \
+        uri = 'http://{{host}}:{port}/webhdfs/v1/' \
               '{path}?op={op}&{key}={val}' \
               '&user.name={user}' \
-            .format(
-                host=self.host, port=self.port, path=quoted_path,
-                op=op, key=mykey, val=myval, user=self.user_name)
+              .format(
+                  port=self.port, path=quoted_path,
+                  op=op, key=mykey, val=myval, user=self.user_name)
         result = self.webhdfs._create_uri(path, op, mykey=myval)
         self.assertEqual(uri, result)
 
