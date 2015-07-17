@@ -374,9 +374,8 @@ class PyWebHdfsClient(object):
         }
         """
 
-        uri = self._create_uri(path, operations.GETCONTENTSUMMARY)
-        response = requests.get(uri, allow_redirects=True)
-
+        response = self._resolve_host(requests.get, True,
+                                      path, operations.GETCONTENTSUMMARY)
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
 
