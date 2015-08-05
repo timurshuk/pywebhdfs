@@ -20,7 +20,7 @@ class PyWebHdfsClient(object):
     """
 
     def __init__(self, host='localhost', port='50070', user_name=None,
-                 path_to_hosts=None):
+                 path_to_hosts=None, timeout=0):
         """
         Create a new client for interacting with WebHDFS
 
@@ -28,6 +28,7 @@ class PyWebHdfsClient(object):
         :param port: the port number for WebHDFS on the namenode
         :param user_name: WebHDFS user.name used for authentication
         :param path_to_hosts: mapping paths to hostnames for federation
+        :param timeout: timeout for the underlying HTTP request
 
         >>> hdfs = PyWebHdfsClient(host='host',port='50070', user_name='hdfs')
         """
@@ -35,6 +36,7 @@ class PyWebHdfsClient(object):
         self.host = host
         self.port = port
         self.user_name = user_name
+        self.timeout = timeout
         self.path_to_hosts = path_to_hosts
         if self.path_to_hosts is None:
             self.path_to_hosts = [('.*', [self.host])]
@@ -551,7 +553,8 @@ class PyWebHdfsClient(object):
         hosts = self._resolve_federation(path)
         for host in hosts:
             uri = uri_without_host.format(host=host)
-            response = req_func(uri, allow_redirects=allow_redirect)
+            response = req_func(uri, allow_redirects=allow_redirect,
+                                timeout=self.timeout)
 
             if not _is_standby_exception(response):
                 _move_active_host_to_head(hosts, host)
