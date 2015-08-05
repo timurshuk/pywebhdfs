@@ -490,6 +490,12 @@ class WhenTestingCreateUri(unittest.TestCase):
                                           mykey=myval)
         self.assertEqual(uri, result)
 
+    def test_create_uri_with_leading_slash(self):
+        op = operations.CREATE
+        uri_path_no_slash = self.webhdfs._create_uri(self.path, op)
+        uri_path_with_slash = self.webhdfs._create_uri('/' + self.path, op)
+        self.assertEqual(uri_path_no_slash, uri_path_with_slash)
+
     def test_create_uri_with_unicode_path(self):
         op = operations.CREATE
         mykey = 'mykey'
