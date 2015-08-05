@@ -49,7 +49,7 @@ class PyWebHdfsClient(object):
         """
         Creates a new file on HDFS
 
-        :param path: the HDFS file path without a leading '/'
+        :param path: the HDFS file path
         :param file_data: the initial data to write to the new file
 
         The function wraps the WebHDFS REST call:
@@ -110,7 +110,7 @@ class PyWebHdfsClient(object):
         """
         Appends to an existing file on HDFS
 
-        :param path: the HDFS file path without a leading '/'
+        :param path: the HDFS file path
         :param file_data: data to append to existing file
 
         The function wraps the WebHDFS REST call:
@@ -166,7 +166,7 @@ class PyWebHdfsClient(object):
         """
         Reads from a file on HDFS  and returns the content
 
-        :param path: the HDFS file path without a leading '/'
+        :param path: the HDFS file path
 
         The function wraps the WebHDFS REST call:
 
@@ -201,7 +201,7 @@ class PyWebHdfsClient(object):
         """
         Create a new directory on HDFS
 
-        :param path: the HDFS file path without a leading '/'
+        :param path: the HDFS file path
 
         The function wraps the WebHDFS REST call:
 
@@ -234,7 +234,7 @@ class PyWebHdfsClient(object):
         """
         Rename an existing directory or file on HDFS
 
-        :param path: the HDFS file path without a leading '/'
+        :param path: the HDFS file path
         :param destination_path: the new file path name
 
         The function wraps the WebHDFS REST call:
@@ -263,7 +263,7 @@ class PyWebHdfsClient(object):
         """
         Delete an existing file or directory from HDFS
 
-        :param path: the HDFS file path without a leading '/'
+        :param path: the HDFS file path
 
         The function wraps the WebHDFS REST call:
 
@@ -294,7 +294,7 @@ class PyWebHdfsClient(object):
         """
         Get the file_status of a single file or directory on HDFS
 
-        :param path: the HDFS file path without a leading '/'
+        :param path: the HDFS file path
 
         The function wraps the WebHDFS REST call:
 
@@ -351,7 +351,7 @@ class PyWebHdfsClient(object):
         """
         Get the content summary of a directory on HDFS
 
-        :param path: the HDFS file path without a leading '/'
+        :param path: the HDFS file path
 
         The function wraps the WebHDFS REST call:
 
@@ -386,7 +386,7 @@ class PyWebHdfsClient(object):
         """
         Get the file_checksum of a single file on HDFS
 
-        :param path: the HDFS file path without a leading '/'
+        :param path: the HDFS file path
 
         The function wraps the WebHDFS REST call:
 
@@ -418,7 +418,7 @@ class PyWebHdfsClient(object):
         Get a list of file_status for all files and directories
         inside an HDFS directory
 
-        :param path: the HDFS file path without a leading '/'
+        :param path: the HDFS file path
 
         The function wraps the WebHDFS REST call:
 
@@ -501,7 +501,8 @@ class PyWebHdfsClient(object):
         the <PATH>, <OPERATION>, and any provided optional arguments
         """
 
-        path_param = quote(path.encode('utf8'))
+        no_root_path = (path[1:] if path[0] == '/' else path)
+        path_param = quote(no_root_path.encode('utf8'))
 
         # setup the parameter represent the WebHDFS operation
         operation_param = '?op={operation}'.format(operation=operation)
