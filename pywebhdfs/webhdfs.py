@@ -466,6 +466,33 @@ class PyWebHdfsClient(object):
 
         return response.json()
 
+    def exists_file_dir(self, path):
+        """
+        Checks whether a file or directory exists on HDFS
+
+        :param path: the HDFS file path
+
+        The function wraps the WebHDFS REST call:
+
+        GET http://<HOST>:<PORT>/webhdfs/v1/<PATH>?op=GETFILESTATUS
+
+        and returns a bool based on the response.
+
+        Example for checking whether a file exists:
+
+        >>> hdfs = PyWebHdfsClient(host='host',port='50070', user_name='hdfs')
+        >>> my_file = 'user/hdfs/data/myfile.txt'
+        >>> hdfs.exists_file_dir(my_file)
+        True
+        """
+        response = self._resolve_host(requests.get, True,
+                                      path, operations.GETFILESTATUS)
+        if response.status_code == http_client.OK:
+            return True
+        elif response.status_code == http_client.NOT_FOUND:
+            return False
+        _raise_pywebhdfs_exception(response.status_code, response.content)
+
     def _create_uri(self, path, operation, **kwargs):
         """
         internal function used to construct the WebHDFS request uri based on

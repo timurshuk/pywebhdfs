@@ -457,6 +457,58 @@ class WhenTestingListDirOperation(unittest.TestCase):
             self.assertEqual(result[key], self.file_status[key])
 
 
+class WhenTestingFileExistsOperation(unittest.TestCase):
+
+    def setUp(self):
+
+        self.host = 'hostname'
+        self.port = '00000'
+        self.user_name = 'username'
+        self.webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
+                                       user_name=self.user_name)
+        self.response = MagicMock()
+        self.requests = MagicMock(return_value=self.response)
+        self.path = 'user/hdfs/old_dir'
+        self.response = MagicMock()
+        self.file_status = {
+            "FileStatus": {
+                "accessTime": 0,
+                "blockSize": 0,
+                "group": "supergroup",
+                "length": 0,
+                "modificationTime": 1320173277227,
+                "owner": "webuser",
+                "pathSuffix": "",
+                "permission": "777",
+                "replication": 0,
+                "type": "DIRECTORY"
+            }
+        }
+        self.response.json = MagicMock(return_value=self.file_status)
+
+    def test_exists_throws_exception_for_error(self):
+
+        self.response.status_code = http_client.BAD_REQUEST
+        self.requests.get.return_value = self.response
+        with patch('pywebhdfs.webhdfs.requests', self.requests):
+            with self.assertRaises(errors.PyWebHdfsException):
+                self.webhdfs.exists_file_dir(self.path)
+
+    def test_exists_returns_true(self):
+
+        self.response.status_code = http_client.OK
+        self.requests.get.return_value = self.response
+        with patch('pywebhdfs.webhdfs.requests', self.requests):
+            self.assertTrue(self.webhdfs.exists_file_dir(self.path))
+
+    def test_exists_returns_false(self):
+
+        self.response.status_code = http_client.NOT_FOUND
+        self.requests.get.return_value = self.response
+        with patch('pywebhdfs.webhdfs.requests', self.requests):
+            self.assertFalse(self.webhdfs.exists_file_dir(self.path))
+
+
 class WhenTestingCreateUri(unittest.TestCase):
 
     def setUp(self):
