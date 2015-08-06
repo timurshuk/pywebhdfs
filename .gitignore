@@ -12,4 +12,5 @@ pywebhdfs/coverage.xml
 cache-store
 cache-config
 *.egg
+*.eggs
 *~
