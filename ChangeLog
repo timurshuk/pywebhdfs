@@ -1,6 +1,27 @@
 CHANGES
 =======
 
+0.4.0
+-----
+
+* correct setup.cfg
+* Add test coverage for extended attributes, update README for extended attribtues
+* Add HDFS extended attribute support
+* added exists_file_dir
+* allow paths with leading '/'
+* Add timeout to requests call
+* pass stylecheck
+* resolve conflicts
+* Extract method: _resolve_host
+* Define custom exceptions for HA and federation
+* Return the result of the rename operation
+* Added wrapper for GETCONTENTSUMMARY
+* support federation and HA
+
+0.3.2
+-----
+
+* Fix print statements for Python 3
 * fix linting
 * add GETFILECHECKSUM support
 
