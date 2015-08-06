@@ -495,6 +495,136 @@ class PyWebHdfsClient(object):
             return False
         _raise_pywebhdfs_exception(response.status_code, response.content)
 
+    def get_xattr(self, path, xattr=None):
+        """
+        Get extended attributes set on an HDFS path
+
+        :param path: the HDFS file path without a leading '/'
+        :param xattr: the extended attribute to get
+
+        This function wraps the WebHDFS REST call:
+
+        GET http://<HOST>:<PORT>/webhdfs/v1/<PATH>?op=GETXATTRS
+
+        [&xattr.name=<string>]
+
+        Example for getting an extended attribute:
+
+        >>> hdfs = PyWebHdfsClient(host='host',port='50070', user_name='hdfs')
+        >>> hdfs.get_xattr('user/hdfs/data.txt', xattr='user.important')
+        {
+            "XAttrs": [
+                {
+                    "name":"user.important",
+                    "value":"very"
+                }
+            ]
+        }
+        """
+        kwd_params = {}
+        if xattr:
+            kwd_params['xattr.name'] = xattr
+
+        response = self._resolve_host(requests.get, True,
+                                      path, operations.GETXATTRS,
+                                      **kwd_params)
+
+        if not response.status_code == http_client.OK:
+            _raise_pywebhdfs_exception(response.status_code, response.content)
+        return response.json()
+
+    def set_xattr(self, path, xattr, value, replace=False):
+        """
+        Set an extended attribute on an HDFS path
+
+        :param path: the HDFS file path without a leading '/'
+        :param xattr: the extended attribute to set
+        :param value: the value of the extended attribute
+        :param replace: replace the extended attribute
+
+        This function wraps the WebHDFS REST call:
+
+        PUT http://<HOST>:<PORT>/webhdfs/v1/<PATH>?op=SETXATTR
+
+        [&xattr.name=<string>][&xattr.value=<string][&flag=<REPLACE|CREATE>]
+
+        Example for setting an extended attribute:
+
+        >>> hdfs = PyWebHdfsClient(host='host',port='50070', user_name='hdfs')
+        >>> hdfs.set_xattr('user/hdfs/data.txt', 'user.important', 'very')
+        """
+        kwd_params = {
+            'xattr.name': xattr,
+            'xattr.value': value
+        }
+        if replace:
+            kwd_params['flag'] = "REPLACE"
+        else:
+            kwd_params['flag'] = "CREATE"
+
+        response = self._resolve_host(requests.put, True,
+                                      path, operations.SETXATTR,
+                                      **kwd_params)
+
+        if not response.status_code == http_client.OK:
+            _raise_pywebhdfs_exception(response.status_code, response.content)
+        return True
+
+    def list_xattrs(self, path):
+        """
+        List all the extended attributes set on an HDFS path
+
+        :param path: the HDFS file path without a leading '/'
+
+        This function wraps the WebHDFS REST call:
+
+        GET http://<HOST>:<PORT>/webhdfs/v1/<PATH>?op=LISTXATTRS
+
+        Example for getting an extended attribute:
+
+        >>> hdfs = PyWebHdfsClient(host='host',port='50070', user_name='hdfs')
+        >>> hdfs.list_xattrs('user/hdfs/data.txt')
+        {
+            "XAttrNames": "[\"XATTRNAME1\",\"XATTRNAME2\",\"XATTRNAME3\"]"
+        }
+        """
+        response = self._resolve_host(requests.get, True,
+                                      path, operations.LISTXATTRS)
+
+        if not response.status_code == http_client.OK:
+            _raise_pywebhdfs_exception(response.status_code, response.content)
+        return response.json()
+
+    def delete_xattr(self, path, xattr):
+        """
+        Delete the extended attribute set on an HDFS path
+
+        :param path: the HDFS file path without a leading '/'
+        :param xattr: the extended attribute to delete
+
+        This function wraps the WebHDFS REST call:
+
+        PUT http://<HOST>:<PORT>/webhdfs/v1/<PATH>?op=REMOVEXATTR
+
+        [&xattr.name=<string>]
+
+        Example for getting an extended attribute:
+
+        >>> hdfs = PyWebHdfsClient(host='host',port='50070', user_name='hdfs')
+        >>> hdfs.delete_xattr('user/hdfs/data.txt', 'user.important')
+        """
+        kwd_params = {
+            'xattr.name': xattr
+        }
+
+        response = self._resolve_host(requests.put, True,
+                                      path, operations.REMOVEXATTR,
+                                      **kwd_params)
+
+        if not response.status_code == http_client.OK:
+            _raise_pywebhdfs_exception(response.status_code, response.content)
+        return True
+
     def _create_uri(self, path, operation, **kwargs):
         """
         internal function used to construct the WebHDFS request uri based on

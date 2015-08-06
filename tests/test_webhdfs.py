@@ -509,6 +509,166 @@ class WhenTestingFileExistsOperation(unittest.TestCase):
             self.assertFalse(self.webhdfs.exists_file_dir(self.path))
 
 
+class WhenTestingGetXattrOperation(unittest.TestCase):
+
+    def setUp(self):
+
+        self.host = 'hostname'
+        self.port = '00000'
+        self.user_name = 'username'
+        self.webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
+                                       user_name=self.user_name)
+        self.response = MagicMock()
+        self.requests = MagicMock(return_value=self.response)
+        self.path = 'user/hdfs/old_dir'
+        self.xattr = 'user.test'
+        self.response = MagicMock()
+        self.file_status = {
+            "XAttrs": [
+                {
+                    "name": self.xattr,
+                    "value": "1"
+                }
+            ]
+        }
+        self.response.json = MagicMock(return_value=self.file_status)
+
+    def test_get_xattr_throws_exception_for_not_ok(self):
+
+        self.response.status_code = http_client.BAD_REQUEST
+        self.requests.get.return_value = self.response
+        with patch('pywebhdfs.webhdfs.requests', self.requests):
+            with self.assertRaises(errors.PyWebHdfsException):
+                self.webhdfs.get_xattr(self.path, self.xattr)
+
+    def test_get_xattr_returns_true(self):
+
+        self.response.status_code = http_client.OK
+        self.requests.get.return_value = self.response
+        with patch('pywebhdfs.webhdfs.requests', self.requests):
+            result = self.webhdfs.get_xattr(self.path, self.xattr)
+
+        for key in result:
+            self.assertEqual(result[key], self.file_status[key])
+
+
+class WhenTestingSetXattrOperation(unittest.TestCase):
+
+    def setUp(self):
+
+        self.host = 'hostname'
+        self.port = '00000'
+        self.user_name = 'username'
+        self.webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
+                                       user_name=self.user_name)
+        self.response = MagicMock()
+        self.requests = MagicMock(return_value=self.response)
+        self.path = 'user/hdfs/old_dir'
+        self.xattr = 'user.test'
+        self.value = '1'
+        self.response = MagicMock()
+
+    def test_set_xattr_throws_exception_for_not_ok(self):
+
+        self.response.status_code = http_client.BAD_REQUEST
+        self.requests.put.return_value = self.response
+        with patch('pywebhdfs.webhdfs.requests', self.requests):
+            with self.assertRaises(errors.PyWebHdfsException):
+                self.webhdfs.set_xattr(self.path, self.xattr, self.value)
+
+    def test_set_xattr_returns_true(self):
+
+        self.response.status_code = http_client.OK
+        self.requests.put.return_value = self.response
+        with patch('pywebhdfs.webhdfs.requests', self.requests):
+            result = self.webhdfs.set_xattr(self.path, self.xattr, self.value)
+
+        self.assertTrue(result)
+
+    def test_set_xattr_replace_returns_true(self):
+
+        self.response.status_code = http_client.OK
+        self.requests.put.return_value = self.response
+        with patch('pywebhdfs.webhdfs.requests', self.requests):
+            result = self.webhdfs.set_xattr(
+                self.path, self.xattr, self.value, replace=True)
+
+        self.assertTrue(result)
+
+
+class WhenTestingListXattrsOperation(unittest.TestCase):
+
+    def setUp(self):
+
+        self.host = 'hostname'
+        self.port = '00000'
+        self.user_name = 'username'
+        self.webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
+                                       user_name=self.user_name)
+        self.response = MagicMock()
+        self.requests = MagicMock(return_value=self.response)
+        self.path = 'user/hdfs/old_dir'
+        self.response = MagicMock()
+        self.file_status = {
+            "XAttrNames":
+                [
+                    "[\"XATTRNAME1\",\"XATTRNAME2\",\"XATTRNAME3\"]"
+                ]
+        }
+        self.response.json = MagicMock(return_value=self.file_status)
+
+    def test_list_xattrs_throws_exception_for_not_ok(self):
+
+        self.response.status_code = http_client.BAD_REQUEST
+        self.requests.get.return_value = self.response
+        with patch('pywebhdfs.webhdfs.requests', self.requests):
+            with self.assertRaises(errors.PyWebHdfsException):
+                self.webhdfs.list_xattrs(self.path)
+
+    def test_list_xattrs_returns_true(self):
+
+        self.response.status_code = http_client.OK
+        self.requests.get.return_value = self.response
+        with patch('pywebhdfs.webhdfs.requests', self.requests):
+            result = self.webhdfs.list_xattrs(self.path)
+
+        for key in result:
+            self.assertEqual(result[key], self.file_status[key])
+
+
+class WhenTestingDeleteXattrOperation(unittest.TestCase):
+
+    def setUp(self):
+
+        self.host = 'hostname'
+        self.port = '00000'
+        self.user_name = 'username'
+        self.webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
+                                       user_name=self.user_name)
+        self.response = MagicMock()
+        self.requests = MagicMock(return_value=self.response)
+        self.path = 'user/hdfs/old_dir'
+        self.xattr = 'user.test'
+        self.response = MagicMock()
+
+    def test_delete_xattr_throws_exception_for_not_ok(self):
+
+        self.response.status_code = http_client.BAD_REQUEST
+        self.requests.put.return_value = self.response
+        with patch('pywebhdfs.webhdfs.requests', self.requests):
+            with self.assertRaises(errors.PyWebHdfsException):
+                self.webhdfs.delete_xattr(self.path, self.xattr)
+
+    def test_delete_xattr_returns_true(self):
+
+        self.response.status_code = http_client.OK
+        self.requests.put.return_value = self.response
+        with patch('pywebhdfs.webhdfs.requests', self.requests):
+            result = self.webhdfs.delete_xattr(self.path, self.xattr)
+
+        self.assertTrue(result)
+
+
 class WhenTestingCreateUri(unittest.TestCase):
 
     def setUp(self):

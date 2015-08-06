@@ -28,6 +28,7 @@ operations including:
 #. Status of a File/Directory
 #. Checksum of a File
 #. List a Directory
+#. Get/Set/List/Delete Extended Attributes (Requires Hadoop 2.5.x+)
 
 The documentation for the Hadoop WebHDFS REST API can be found at
 `http://hadoop.apache.org/docs/r1.0.4/webhdfs.html`_
