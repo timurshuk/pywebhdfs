@@ -20,7 +20,9 @@ class PyWebHdfsClient(object):
     """
 
     def __init__(self, host='localhost', port='50070', user_name=None,
-                 path_to_hosts=None, timeout=None):
+                 path_to_hosts=None, timeout=None,
+                 base_uri_pattern="http://{host}:{port}/webhdfs/v1/",
+                 request_extra_opts=None):
         """
         Create a new client for interacting with WebHDFS
 
@@ -29,21 +31,29 @@ class PyWebHdfsClient(object):
         :param user_name: WebHDFS user.name used for authentication
         :param path_to_hosts: mapping paths to hostnames for federation
         :param timeout: timeout for the underlying HTTP request
+        :param base_uri_pattern: format string for base URI
+        :param request_extra_opts: dictionary of extra options to pass
+          to the requests library (e.g., SSL, HTTP authentication, etc.)
 
         >>> hdfs = PyWebHdfsClient(host='host',port='50070', user_name='hdfs')
+
+        Via a secure Knox gateway:
+
+        >>> hdfs = PyWebHdfsClient(base_uri_pattern=
+        >>>     "https://knox.mycluster.local:9443/gateway/default/webhdfs/v1",
+        >>>     request_extra_opts={'verify': '/etc/ssl/myrootca.crt',
+        >>>                         'auth': ('username', 'password')})
         """
 
-        self.host = host
-        self.port = port
         self.user_name = user_name
         self.timeout = timeout
         self.path_to_hosts = path_to_hosts
         if self.path_to_hosts is None:
-            self.path_to_hosts = [('.*', [self.host])]
+            self.path_to_hosts = [('.*', [host])]
 
-        # create base uri to be used in request operations
-        self.base_uri = 'http://{host}:{port}/webhdfs/v1/'.format(
-            host=self.host, port=self.port)
+        self.base_uri_pattern = base_uri_pattern.format(
+            host="{host}", port=port)
+        self.request_extra_opts = request_extra_opts
 
     def create_file(self, path, file_data, **kwargs):
         """
@@ -99,7 +109,8 @@ class PyWebHdfsClient(object):
         uri = init_response.headers['location']
         response = requests.put(
             uri, data=file_data,
-            headers={'content-type': 'application/octet-stream'})
+            headers={'content-type': 'application/octet-stream'},
+            **self.request_extra_opts)
 
         if not response.status_code == http_client.CREATED:
             _raise_pywebhdfs_exception(response.status_code, response.content)
@@ -155,7 +166,9 @@ class PyWebHdfsClient(object):
         uri = init_response.headers['location']
         response = requests.post(
             uri, data=file_data,
-            headers={'content-type': 'application/octet-stream'})
+            headers={'content-type': 'application/octet-stream'},
+            **self.request_extra_opts
+        )
 
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
@@ -653,8 +666,7 @@ class PyWebHdfsClient(object):
             keyword_params = '{params}&{key}={value}'.format(
                 params=keyword_params, key=key, value=value)
 
-        base_uri = 'http://{{host}}:{port}/webhdfs/v1/'.format(
-            port=self.port)
+        base_uri = self.base_uri_pattern.format(host="{host}")
 
         # build the complete uri from the base uri and all configured params
         uri = '{base_uri}{path}{operation}{keyword_args}{auth}'.format(
@@ -685,7 +697,8 @@ class PyWebHdfsClient(object):
         for host in hosts:
             uri = uri_without_host.format(host=host)
             response = req_func(uri, allow_redirects=allow_redirect,
-                                timeout=self.timeout)
+                                timeout=self.timeout,
+                                **self.request_extra_opts)
 
             if not _is_standby_exception(response):
                 _move_active_host_to_head(hosts, host)
