@@ -45,11 +45,13 @@ class PyWebHdfsClient(object):
         >>>                         'auth': ('username', 'password')})
         """
 
+        self.host = host
+        self.port = port
         self.user_name = user_name
         self.timeout = timeout
         self.path_to_hosts = path_to_hosts
         if self.path_to_hosts is None:
-            self.path_to_hosts = [('.*', [host])]
+            self.path_to_hosts = [('.*', [self.host])]
 
         self.base_uri_pattern = base_uri_pattern.format(
             host="{host}", port=port)
