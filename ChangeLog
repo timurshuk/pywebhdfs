@@ -1,6 +1,13 @@
 CHANGES
 =======
 
+* update AUTHORS
+* Restored host and port fields in PyWebHDFSClient. They are not used internally anymore, but are a visible part of the API, so cannot be removed
+* Fixed error in default value of request_extra_opts
+* Added support for general base URIs and extra options for REST requests
+* Set default timeout to None instead of 0
+* update .gitignore
+
 0.4.0
 -----
 
