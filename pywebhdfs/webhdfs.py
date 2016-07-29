@@ -698,13 +698,16 @@ class PyWebHdfsClient(object):
         hosts = self._resolve_federation(path)
         for host in hosts:
             uri = uri_without_host.format(host=host)
-            response = req_func(uri, allow_redirects=allow_redirect,
-                                timeout=self.timeout,
-                                **self.request_extra_opts)
+            try:
+                response = req_func(uri, allow_redirects=allow_redirect,
+                                    timeout=self.timeout,
+                                    **self.request_extra_opts)
 
-            if not _is_standby_exception(response):
-                _move_active_host_to_head(hosts, host)
-                return response
+                if not _is_standby_exception(response):
+                    _move_active_host_to_head(hosts, host)
+                    return response
+            except requests.exceptions.RequestException:
+                continue
         raise errors.ActiveHostNotFound(msg="Could not find active host")
 
 
