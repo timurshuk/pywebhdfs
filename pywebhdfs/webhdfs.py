@@ -245,7 +245,7 @@ class PyWebHdfsClient(object):
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
 
-        for chunk in response.iter_content(chunk_size): 
+        for chunk in response.iter_content(chunk_size):
             if chunk: # filter out keep-alive new chunks
                 yield chunk
 
