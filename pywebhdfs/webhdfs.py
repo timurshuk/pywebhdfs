@@ -246,7 +246,7 @@ class PyWebHdfsClient(object):
             _raise_pywebhdfs_exception(response.status_code, response.content)
 
         for chunk in response.iter_content(chunk_size):
-            if chunk: # filter out keep-alive new chunks
+            if chunk:
                 yield chunk
 
     def make_dir(self, path, **kwargs):
