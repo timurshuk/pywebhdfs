@@ -212,6 +212,43 @@ class PyWebHdfsClient(object):
 
         return response.content
 
+    def stream_file(self, path, chunk_size=1024, **kwargs):
+        """
+        Reads from a file on HDFS  and returns the content
+
+        :param path: the HDFS file path
+
+        The function wraps the WebHDFS REST call:
+
+        GET http://<HOST>:<PORT>/webhdfs/v1/<PATH>?op=OPEN
+
+        [&offset=<LONG>][&length=<LONG>][&buffersize=<INT>]
+
+        Note: this function follows automatic redirects
+
+        Example:
+
+        >>> hdfs = PyWebHdfsClient(host='host',port='50070', user_name='hdfs')
+        >>> my_file = 'user/hdfs/data/myfile.txt'
+        >>> hdfs.read_file(my_file)
+        01010101010101010101010101010101
+        01010101010101010101010101010101
+        01010101010101010101010101010101
+        01010101010101010101010101010101
+        """
+
+        optional_args = kwargs
+
+        response = self._resolve_host(requests.get, True,
+                                      path, operations.OPEN, stream=True,
+                                      **optional_args)
+        if not response.status_code == http_client.OK:
+            _raise_pywebhdfs_exception(response.status_code, response.content)
+
+        for chunk in response.iter_content(chunk_size):
+            if chunk:
+                yield chunk
+
     def make_dir(self, path, **kwargs):
         """
         Create a new directory on HDFS
