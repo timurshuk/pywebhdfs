@@ -17,6 +17,7 @@ class WhenTestingPyWebHdfsConstructor(unittest.TestCase):
         self.assertEqual('localhost', webhdfs.host)
         self.assertEqual('50070', webhdfs.port)
         self.assertIsNone(webhdfs.user_name)
+        self.assertEqual(120, webhdfs.timeout)
 
     def test_init_args_provided(self):
         host = '127.0.0.1'
