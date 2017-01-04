@@ -9,6 +9,8 @@ from pywebhdfs import errors
 from pywebhdfs.webhdfs import PyWebHdfsClient, _raise_pywebhdfs_exception
 from pywebhdfs import operations
 
+from requests.sessions import Session
+
 
 class WhenTestingPyWebHdfsConstructor(unittest.TestCase):
 
@@ -42,10 +44,6 @@ class WhenTestingCreateOperation(unittest.TestCase):
         self.host = 'hostname'
         self.port = '00000'
         self.user_name = 'username'
-        self.webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
-                                       user_name=self.user_name)
-        self.response = MagicMock()
-        self.requests = MagicMock(return_value=self.response)
         self.location = 'redirect_uri'
         self.path = 'user/hdfs'
         self.file_data = '010101'
@@ -54,35 +52,39 @@ class WhenTestingCreateOperation(unittest.TestCase):
         self.response = MagicMock()
         self.expected_headers = {'content-type': 'application/octet-stream'}
 
-    def test_create_throws_exception_for_no_redirect(self):
+    @patch.object(Session, 'put')
+    def test_create_throws_exception_for_no_redirect(self, mock_put):
 
+        webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
+                                  user_name=self.user_name)
         self.init_response.status_code = http_client.BAD_REQUEST
         self.response.status_code = http_client.CREATED
-        self.requests.put.side_effect = [self.init_response, self.response]
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            with self.assertRaises(errors.PyWebHdfsException):
-                self.webhdfs.create_file(self.path, self.file_data)
+        mock_put.side_effect = [self.init_response, self.response]
+        with self.assertRaises(errors.PyWebHdfsException):
+            webhdfs.create_file(self.path, self.file_data)
 
-    def test_create_throws_exception_for_not_created(self):
+    @patch.object(Session, 'put')
+    def test_create_throws_exception_for_not_created(self, mock_put):
 
+        webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
+                                  user_name=self.user_name)
         self.init_response.status_code = http_client.TEMPORARY_REDIRECT
         self.response.status_code = http_client.BAD_REQUEST
-        self.requests.put.side_effect = [self.init_response, self.response]
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            with self.assertRaises(errors.PyWebHdfsException):
-                self.webhdfs.create_file(self.path, self.file_data)
+        mock_put.side_effect = [self.init_response, self.response]
+        with self.assertRaises(errors.PyWebHdfsException):
+            webhdfs.create_file(self.path, self.file_data)
 
-    def test_create_returns_file_location(self):
+    @patch.object(Session, 'put')
+    def test_create_returns_file_location(self, put_mock):
 
+        webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
+                                  user_name=self.user_name)
         self.init_response.status_code = http_client.TEMPORARY_REDIRECT
         self.response.status_code = http_client.CREATED
-        self.put_method = MagicMock(
-            side_effect=[self.init_response, self.response])
-        self.requests.put = self.put_method
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            result = self.webhdfs.create_file(self.path, self.file_data)
+        put_mock.side_effect = [self.init_response, self.response]
+        result = webhdfs.create_file(self.path, self.file_data)
         self.assertTrue(result)
-        self.put_method.assert_called_with(
+        put_mock.assert_called_with(
             self.location, headers=self.expected_headers, data=self.file_data)
 
 
