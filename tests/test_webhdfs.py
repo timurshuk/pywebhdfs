@@ -75,16 +75,16 @@ class WhenTestingCreateOperation(unittest.TestCase):
             webhdfs.create_file(self.path, self.file_data)
 
     @patch.object(Session, 'put')
-    def test_create_returns_file_location(self, put_mock):
+    def test_create_returns_file_location(self, mock_put):
 
         webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
                                   user_name=self.user_name)
         self.init_response.status_code = http_client.TEMPORARY_REDIRECT
         self.response.status_code = http_client.CREATED
-        put_mock.side_effect = [self.init_response, self.response]
+        mock_put.side_effect = [self.init_response, self.response]
         result = webhdfs.create_file(self.path, self.file_data)
         self.assertTrue(result)
-        put_mock.assert_called_with(
+        mock_put.assert_called_with(
             self.location, headers=self.expected_headers, data=self.file_data)
 
 
@@ -98,39 +98,37 @@ class WhenTestingAppendOperation(unittest.TestCase):
         self.webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
                                        user_name=self.user_name)
         self.response = MagicMock()
-        self.requests = MagicMock(return_value=self.response)
         self.location = 'redirect_uri'
         self.path = 'user/hdfs'
         self.file_data = '010101'
         self.init_response = MagicMock()
         self.init_response.header = {'location': self.location}
-        self.response = MagicMock()
 
-    def test_append_throws_exception_for_no_redirect(self):
+    @patch.object(Session, 'post')
+    def test_append_throws_exception_for_no_redirect(self, mock_post):
 
         self.init_response.status_code = http_client.BAD_REQUEST
         self.response.status_code = http_client.OK
-        self.requests.post.side_effect = [self.init_response, self.response]
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            with self.assertRaises(errors.PyWebHdfsException):
-                self.webhdfs.append_file(self.path, self.file_data)
+        mock_post.side_effect = [self.init_response, self.response]
+        with self.assertRaises(errors.PyWebHdfsException):
+            self.webhdfs.append_file(self.path, self.file_data)
 
-    def test_append_throws_exception_for_not_ok(self):
+    @patch.object(Session, 'post')
+    def test_append_throws_exception_for_not_ok(self, mock_post):
 
         self.init_response.status_code = http_client.TEMPORARY_REDIRECT
         self.response.status_code = http_client.BAD_REQUEST
-        self.requests.post.side_effect = [self.init_response, self.response]
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            with self.assertRaises(errors.PyWebHdfsException):
-                self.webhdfs.append_file(self.path, self.file_data)
+        mock_post.side_effect = [self.init_response, self.response]
+        with self.assertRaises(errors.PyWebHdfsException):
+            self.webhdfs.append_file(self.path, self.file_data)
 
-    def test_append_returns_true(self):
+    @patch.object(Session, 'post')
+    def test_append_returns_true(self, mock_post):
 
         self.init_response.status_code = http_client.TEMPORARY_REDIRECT
         self.response.status_code = http_client.OK
-        self.requests.post.side_effect = [self.init_response, self.response]
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            result = self.webhdfs.append_file(self.path, self.file_data)
+        mock_post.side_effect = [self.init_response, self.response]
+        result = self.webhdfs.append_file(self.path, self.file_data)
         self.assertTrue(result)
 
 
@@ -143,35 +141,33 @@ class WhenTestingOpenOperation(unittest.TestCase):
         self.user_name = 'username'
         self.webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
                                        user_name=self.user_name)
-        self.response = MagicMock()
-        self.requests = MagicMock(return_value=self.response)
         self.path = 'user/hdfs'
         self.file_data = u'010101'
         self.response = MagicMock()
         self.response.content = self.file_data
 
-    def test_read_throws_exception_for_not_ok(self):
+    @patch.object(Session, 'get')
+    def test_read_throws_exception_for_not_ok(self, mock_get):
 
         self.response.status_code = http_client.BAD_REQUEST
-        self.requests.get.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            with self.assertRaises(errors.PyWebHdfsException):
-                self.webhdfs.read_file(self.path)
+        mock_get.return_value = self.response
+        with self.assertRaises(errors.PyWebHdfsException):
+            self.webhdfs.read_file(self.path)
 
-    def test_read_returns_file(self):
+    @patch.object(Session, 'get')
+    def test_read_returns_file(self, mock_get):
 
         self.response.status_code = http_client.OK
-        self.requests.get.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            result = self.webhdfs.read_file(self.path)
+        mock_get.return_value = self.response
+        result = self.webhdfs.read_file(self.path)
         self.assertEqual(result, self.file_data)
 
-    def test_stream_returns_generator(self):
+    @patch.object(Session, 'get')
+    def test_stream_returns_generator(self, mock_get):
 
         self.response.status_code = http_client.OK
-        self.requests.get.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            result = self.webhdfs.stream_file(self.path)
+        mock_get.return_value = self.response
+        result = self.webhdfs.stream_file(self.path)
         self.assertIsInstance(result, types.GeneratorType)
 
 
@@ -185,24 +181,22 @@ class WhenTestingMkdirOperation(unittest.TestCase):
         self.webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
                                        user_name=self.user_name)
         self.response = MagicMock()
-        self.requests = MagicMock(return_value=self.response)
         self.path = 'user/hdfs'
-        self.response = MagicMock()
 
-    def test_mkdir_throws_exception_for_not_ok(self):
+    @patch.object(Session, 'put')
+    def test_mkdir_throws_exception_for_not_ok(self, mock_put):
 
         self.response.status_code = http_client.BAD_REQUEST
-        self.requests.put.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            with self.assertRaises(errors.PyWebHdfsException):
-                self.webhdfs.make_dir(self.path)
+        mock_put.return_value = self.response
+        with self.assertRaises(errors.PyWebHdfsException):
+            self.webhdfs.make_dir(self.path)
 
-    def test_mkdir_returns_true(self):
+    @patch.object(Session, 'put')
+    def test_mkdir_returns_true(self, mock_put):
 
         self.response.status_code = http_client.OK
-        self.requests.put.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            result = self.webhdfs.make_dir(self.path)
+        mock_put.return_value = self.response
+        result = self.webhdfs.make_dir(self.path)
         self.assertTrue(result)
 
 
@@ -216,27 +210,26 @@ class WhenTestingRenameOperation(unittest.TestCase):
         self.webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
                                        user_name=self.user_name)
         self.response = MagicMock()
-        self.requests = MagicMock(return_value=self.response)
         self.path = 'user/hdfs/old_dir'
         self.new_path = '/user/hdfs/new_dir'
         self.response = MagicMock()
         self.rename = {"boolean": True}
         self.response.json = MagicMock(return_value=self.rename)
 
-    def test_rename_throws_exception_for_not_ok(self):
+    @patch.object(Session, 'put')
+    def test_rename_throws_exception_for_not_ok(self, mock_put):
 
         self.response.status_code = http_client.BAD_REQUEST
-        self.requests.put.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            with self.assertRaises(errors.PyWebHdfsException):
-                self.webhdfs.rename_file_dir(self.path, self.new_path)
+        mock_put.return_value = self.response
+        with self.assertRaises(errors.PyWebHdfsException):
+            self.webhdfs.rename_file_dir(self.path, self.new_path)
 
-    def test_rename_returns_true(self):
+    @patch.object(Session, 'put')
+    def test_rename_returns_true(self, mock_put):
 
         self.response.status_code = http_client.OK
-        self.requests.put.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            result = self.webhdfs.rename_file_dir(self.path, self.new_path)
+        mock_put.return_value = self.response
+        result = self.webhdfs.rename_file_dir(self.path, self.new_path)
         self.assertEqual(result, {"boolean": True})
 
 
@@ -252,22 +245,21 @@ class WhenTestingDeleteOperation(unittest.TestCase):
         self.response = MagicMock()
         self.requests = MagicMock(return_value=self.response)
         self.path = 'user/hdfs/old_dir'
-        self.response = MagicMock()
 
-    def test_rename_throws_exception_for_not_ok(self):
+    @patch.object(Session, 'delete')
+    def test_rename_throws_exception_for_not_ok(self, mock_delete):
 
         self.response.status_code = http_client.BAD_REQUEST
-        self.requests.delete.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            with self.assertRaises(errors.PyWebHdfsException):
-                self.webhdfs.delete_file_dir(self.path)
+        mock_delete.return_value = self.response
+        with self.assertRaises(errors.PyWebHdfsException):
+            self.webhdfs.delete_file_dir(self.path)
 
-    def test_rename_returns_true(self):
+    @patch.object(Session, 'delete')
+    def test_rename_returns_true(self, mock_delete):
 
         self.response.status_code = http_client.OK
-        self.requests.delete.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            result = self.webhdfs.delete_file_dir(self.path)
+        mock_delete.return_value = self.response
+        result = self.webhdfs.delete_file_dir(self.path)
         self.assertTrue(result)
 
 
@@ -281,9 +273,7 @@ class WhenTestingGetFileStatusOperation(unittest.TestCase):
         self.webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
                                        user_name=self.user_name)
         self.response = MagicMock()
-        self.requests = MagicMock(return_value=self.response)
         self.path = 'user/hdfs/old_dir'
-        self.response = MagicMock()
         self.file_status = {
             "FileStatus": {
                 "accessTime": 0,
@@ -300,20 +290,20 @@ class WhenTestingGetFileStatusOperation(unittest.TestCase):
         }
         self.response.json = MagicMock(return_value=self.file_status)
 
-    def test_get_status_throws_exception_for_not_ok(self):
+    @patch.object(Session, 'get')
+    def test_get_status_throws_exception_for_not_ok(self, mock_get):
 
         self.response.status_code = http_client.BAD_REQUEST
-        self.requests.get.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            with self.assertRaises(errors.PyWebHdfsException):
-                self.webhdfs.get_file_dir_status(self.path)
+        mock_get.return_value = self.response
+        with self.assertRaises(errors.PyWebHdfsException):
+            self.webhdfs.get_file_dir_status(self.path)
 
-    def test_get_status_returns_true(self):
+    @patch.object(Session, 'get')
+    def test_get_status_returns_true(self, mock_get):
 
         self.response.status_code = http_client.OK
-        self.requests.get.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            result = self.webhdfs.get_file_dir_status(self.path)
+        mock_get.return_value = self.response
+        result = self.webhdfs.get_file_dir_status(self.path)
 
         for key in result:
             self.assertEqual(result[key], self.file_status[key])
@@ -329,9 +319,7 @@ class WhenTestingGetContentSummaryOperation(unittest.TestCase):
         self.webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
                                        user_name=self.user_name)
         self.response = MagicMock()
-        self.requests = MagicMock(return_value=self.response)
         self.path = 'user/hdfs/old_dir'
-        self.response = MagicMock()
         self.file_status = {
             "ContentSummary": {
                 "directoryCount": 2,
@@ -344,20 +332,20 @@ class WhenTestingGetContentSummaryOperation(unittest.TestCase):
         }
         self.response.json = MagicMock(return_value=self.file_status)
 
-    def test_get_status_throws_exception_for_not_ok(self):
+    @patch.object(Session, 'get')
+    def test_get_status_throws_exception_for_not_ok(self, mock_get):
 
         self.response.status_code = http_client.BAD_REQUEST
-        self.requests.get.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            with self.assertRaises(errors.PyWebHdfsException):
-                self.webhdfs.get_content_summary(self.path)
+        mock_get.return_value = self.response
+        with self.assertRaises(errors.PyWebHdfsException):
+            self.webhdfs.get_content_summary(self.path)
 
-    def test_get_status_returns_true(self):
+    @patch.object(Session, 'get')
+    def test_get_status_returns_true(self, mock_get):
 
         self.response.status_code = http_client.OK
-        self.requests.get.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            result = self.webhdfs.get_content_summary(self.path)
+        mock_get.return_value = self.response
+        result = self.webhdfs.get_content_summary(self.path)
 
         for key in result:
             self.assertEqual(result[key], self.file_status[key])
@@ -372,8 +360,6 @@ class WhenTestingGetFileChecksumOperation(unittest.TestCase):
         self.user_name = 'username'
         self.webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
                                        user_name=self.user_name)
-        self.response = MagicMock()
-        self.requests = MagicMock(return_value=self.response)
         self.path = 'user/hdfs/old_dir'
         self.response = MagicMock()
         self.file_checksum = {
@@ -386,20 +372,20 @@ class WhenTestingGetFileChecksumOperation(unittest.TestCase):
         }
         self.response.json = MagicMock(return_value=self.file_checksum)
 
-    def test_get_status_throws_exception_for_not_ok(self):
+    @patch.object(Session, 'get')
+    def test_get_status_throws_exception_for_not_ok(self, mock_get):
 
         self.response.status_code = http_client.BAD_REQUEST
-        self.requests.get.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            with self.assertRaises(errors.PyWebHdfsException):
-                self.webhdfs.get_file_checksum(self.path)
+        mock_get.return_value = self.response
+        with self.assertRaises(errors.PyWebHdfsException):
+            self.webhdfs.get_file_checksum(self.path)
 
-    def test_get_status_returns_true(self):
+    @patch.object(Session, 'get')
+    def test_get_status_returns_true(self, mock_get):
 
         self.response.status_code = http_client.OK
-        self.requests.get.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            result = self.webhdfs.get_file_checksum(self.path)
+        mock_get.return_value = self.response
+        result = self.webhdfs.get_file_checksum(self.path)
 
         for key in result:
             self.assertEqual(result[key], self.file_checksum[key])
@@ -414,8 +400,6 @@ class WhenTestingListDirOperation(unittest.TestCase):
         self.user_name = 'username'
         self.webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
                                        user_name=self.user_name)
-        self.response = MagicMock()
-        self.requests = MagicMock(return_value=self.response)
         self.path = 'user/hdfs/old_dir'
         self.response = MagicMock()
         self.file_status = {
@@ -450,20 +434,20 @@ class WhenTestingListDirOperation(unittest.TestCase):
         }
         self.response.json = MagicMock(return_value=self.file_status)
 
-    def test_get_status_throws_exception_for_not_ok(self):
+    @patch.object(Session, 'get')
+    def test_get_status_throws_exception_for_not_ok(self, mock_get):
 
         self.response.status_code = http_client.BAD_REQUEST
-        self.requests.get.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            with self.assertRaises(errors.PyWebHdfsException):
-                self.webhdfs.list_dir(self.path)
+        mock_get.return_value = self.response
+        with self.assertRaises(errors.PyWebHdfsException):
+            self.webhdfs.list_dir(self.path)
 
-    def test_get_status_returns_true(self):
+    @patch.object(Session, 'get')
+    def test_get_status_returns_true(self, mock_get):
 
         self.response.status_code = http_client.OK
-        self.requests.get.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            result = self.webhdfs.list_dir(self.path)
+        mock_get.return_value = self.response
+        result = self.webhdfs.list_dir(self.path)
 
         for key in result:
             self.assertEqual(result[key], self.file_status[key])
@@ -478,8 +462,6 @@ class WhenTestingFileExistsOperation(unittest.TestCase):
         self.user_name = 'username'
         self.webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
                                        user_name=self.user_name)
-        self.response = MagicMock()
-        self.requests = MagicMock(return_value=self.response)
         self.path = 'user/hdfs/old_dir'
         self.response = MagicMock()
         self.file_status = {
@@ -498,27 +480,27 @@ class WhenTestingFileExistsOperation(unittest.TestCase):
         }
         self.response.json = MagicMock(return_value=self.file_status)
 
-    def test_exists_throws_exception_for_error(self):
+    @patch.object(Session, 'get')
+    def test_exists_throws_exception_for_error(self, mock_get):
 
         self.response.status_code = http_client.BAD_REQUEST
-        self.requests.get.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            with self.assertRaises(errors.PyWebHdfsException):
-                self.webhdfs.exists_file_dir(self.path)
+        mock_get.return_value = self.response
+        with self.assertRaises(errors.PyWebHdfsException):
+            self.webhdfs.exists_file_dir(self.path)
 
-    def test_exists_returns_true(self):
+    @patch.object(Session, 'get')
+    def test_exists_returns_true(self, mock_get):
 
         self.response.status_code = http_client.OK
-        self.requests.get.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            self.assertTrue(self.webhdfs.exists_file_dir(self.path))
+        mock_get.return_value = self.response
+        self.assertTrue(self.webhdfs.exists_file_dir(self.path))
 
-    def test_exists_returns_false(self):
+    @patch.object(Session, 'get')
+    def test_exists_returns_false(self, mock_get):
 
         self.response.status_code = http_client.NOT_FOUND
-        self.requests.get.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            self.assertFalse(self.webhdfs.exists_file_dir(self.path))
+        mock_get.return_value = self.response
+        self.assertFalse(self.webhdfs.exists_file_dir(self.path))
 
 
 class WhenTestingGetXattrOperation(unittest.TestCase):
@@ -530,8 +512,6 @@ class WhenTestingGetXattrOperation(unittest.TestCase):
         self.user_name = 'username'
         self.webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
                                        user_name=self.user_name)
-        self.response = MagicMock()
-        self.requests = MagicMock(return_value=self.response)
         self.path = 'user/hdfs/old_dir'
         self.xattr = 'user.test'
         self.response = MagicMock()
@@ -545,20 +525,20 @@ class WhenTestingGetXattrOperation(unittest.TestCase):
         }
         self.response.json = MagicMock(return_value=self.file_status)
 
-    def test_get_xattr_throws_exception_for_not_ok(self):
+    @patch.object(Session, 'get')
+    def test_get_xattr_throws_exception_for_not_ok(self, mock_get):
 
         self.response.status_code = http_client.BAD_REQUEST
-        self.requests.get.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            with self.assertRaises(errors.PyWebHdfsException):
-                self.webhdfs.get_xattr(self.path, self.xattr)
+        mock_get.return_value = self.response
+        with self.assertRaises(errors.PyWebHdfsException):
+            self.webhdfs.get_xattr(self.path, self.xattr)
 
-    def test_get_xattr_returns_true(self):
+    @patch.object(Session, 'get')
+    def test_get_xattr_returns_true(self, mock_get):
 
         self.response.status_code = http_client.OK
-        self.requests.get.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            result = self.webhdfs.get_xattr(self.path, self.xattr)
+        mock_get.return_value = self.response
+        result = self.webhdfs.get_xattr(self.path, self.xattr)
 
         for key in result:
             self.assertEqual(result[key], self.file_status[key])
@@ -573,37 +553,35 @@ class WhenTestingSetXattrOperation(unittest.TestCase):
         self.user_name = 'username'
         self.webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
                                        user_name=self.user_name)
-        self.response = MagicMock()
-        self.requests = MagicMock(return_value=self.response)
         self.path = 'user/hdfs/old_dir'
         self.xattr = 'user.test'
         self.value = '1'
         self.response = MagicMock()
 
-    def test_set_xattr_throws_exception_for_not_ok(self):
+    @patch.object(Session, 'put')
+    def test_set_xattr_throws_exception_for_not_ok(self, mock_put):
 
         self.response.status_code = http_client.BAD_REQUEST
-        self.requests.put.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            with self.assertRaises(errors.PyWebHdfsException):
-                self.webhdfs.set_xattr(self.path, self.xattr, self.value)
+        mock_put.return_value = self.response
+        with self.assertRaises(errors.PyWebHdfsException):
+            self.webhdfs.set_xattr(self.path, self.xattr, self.value)
 
-    def test_set_xattr_returns_true(self):
+    @patch.object(Session, 'put')
+    def test_set_xattr_returns_true(self, mock_put):
 
         self.response.status_code = http_client.OK
-        self.requests.put.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            result = self.webhdfs.set_xattr(self.path, self.xattr, self.value)
+        mock_put.return_value = self.response
+        result = self.webhdfs.set_xattr(self.path, self.xattr, self.value)
 
         self.assertTrue(result)
 
-    def test_set_xattr_replace_returns_true(self):
+    @patch.object(Session, 'put')
+    def test_set_xattr_replace_returns_true(self, mock_put):
 
         self.response.status_code = http_client.OK
-        self.requests.put.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            result = self.webhdfs.set_xattr(
-                self.path, self.xattr, self.value, replace=True)
+        mock_put.return_value = self.response
+        result = self.webhdfs.set_xattr(
+            self.path, self.xattr, self.value, replace=True)
 
         self.assertTrue(result)
 
@@ -617,8 +595,6 @@ class WhenTestingListXattrsOperation(unittest.TestCase):
         self.user_name = 'username'
         self.webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
                                        user_name=self.user_name)
-        self.response = MagicMock()
-        self.requests = MagicMock(return_value=self.response)
         self.path = 'user/hdfs/old_dir'
         self.response = MagicMock()
         self.file_status = {
@@ -629,20 +605,20 @@ class WhenTestingListXattrsOperation(unittest.TestCase):
         }
         self.response.json = MagicMock(return_value=self.file_status)
 
-    def test_list_xattrs_throws_exception_for_not_ok(self):
+    @patch.object(Session, 'get')
+    def test_list_xattrs_throws_exception_for_not_ok(self, mock_get):
 
         self.response.status_code = http_client.BAD_REQUEST
-        self.requests.get.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            with self.assertRaises(errors.PyWebHdfsException):
-                self.webhdfs.list_xattrs(self.path)
+        mock_get.return_value = self.response
+        with self.assertRaises(errors.PyWebHdfsException):
+            self.webhdfs.list_xattrs(self.path)
 
-    def test_list_xattrs_returns_true(self):
+    @patch.object(Session, 'get')
+    def test_list_xattrs_returns_true(self, mock_get):
 
         self.response.status_code = http_client.OK
-        self.requests.get.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            result = self.webhdfs.list_xattrs(self.path)
+        mock_get.return_value = self.response
+        result = self.webhdfs.list_xattrs(self.path)
 
         for key in result:
             self.assertEqual(result[key], self.file_status[key])
@@ -657,26 +633,24 @@ class WhenTestingDeleteXattrOperation(unittest.TestCase):
         self.user_name = 'username'
         self.webhdfs = PyWebHdfsClient(host=self.host, port=self.port,
                                        user_name=self.user_name)
-        self.response = MagicMock()
-        self.requests = MagicMock(return_value=self.response)
         self.path = 'user/hdfs/old_dir'
         self.xattr = 'user.test'
         self.response = MagicMock()
 
-    def test_delete_xattr_throws_exception_for_not_ok(self):
+    @patch.object(Session, 'put')
+    def test_delete_xattr_throws_exception_for_not_ok(self, mock_put):
 
         self.response.status_code = http_client.BAD_REQUEST
-        self.requests.put.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            with self.assertRaises(errors.PyWebHdfsException):
-                self.webhdfs.delete_xattr(self.path, self.xattr)
+        mock_put.return_value = self.response
+        with self.assertRaises(errors.PyWebHdfsException):
+            self.webhdfs.delete_xattr(self.path, self.xattr)
 
-    def test_delete_xattr_returns_true(self):
+    @patch.object(Session, 'put')
+    def test_delete_xattr_returns_true(self, mock_put):
 
         self.response.status_code = http_client.OK
-        self.requests.put.return_value = self.response
-        with patch('pywebhdfs.webhdfs.requests', self.requests):
-            result = self.webhdfs.delete_xattr(self.path, self.xattr)
+        mock_put.return_value = self.response
+        result = self.webhdfs.delete_xattr(self.path, self.xattr)
 
         self.assertTrue(result)
 
