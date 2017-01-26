@@ -49,6 +49,7 @@ class PyWebHdfsClient(object):
         self.port = port
         self.user_name = user_name
         self.timeout = timeout
+        self.session = requests.Session()
         self.path_to_hosts = path_to_hosts
         if self.path_to_hosts is None:
             self.path_to_hosts = [('.*', [self.host])]
@@ -98,7 +99,7 @@ class PyWebHdfsClient(object):
         # make the initial CREATE call to the HDFS namenode
         optional_args = kwargs
 
-        init_response = self._resolve_host(requests.put, False,
+        init_response = self._resolve_host(self.session.put, False,
                                            path, operations.CREATE,
                                            **optional_args)
         if not init_response.status_code == http_client.TEMPORARY_REDIRECT:
@@ -109,7 +110,7 @@ class PyWebHdfsClient(object):
         # initial response from the namenode and make the CREATE request
         # to the datanode
         uri = init_response.headers['location']
-        response = requests.put(
+        response = self.session.put(
             uri, data=file_data,
             headers={'content-type': 'application/octet-stream'},
             **self.request_extra_opts)
@@ -155,7 +156,7 @@ class PyWebHdfsClient(object):
         # make the initial APPEND call to the HDFS namenode
         optional_args = kwargs
 
-        init_response = self._resolve_host(requests.post, False,
+        init_response = self._resolve_host(self.session.post, False,
                                            path, operations.APPEND,
                                            **optional_args)
         if not init_response.status_code == http_client.TEMPORARY_REDIRECT:
@@ -166,7 +167,7 @@ class PyWebHdfsClient(object):
         # initial response from the namenode and make the APPEND request
         # to the datanode
         uri = init_response.headers['location']
-        response = requests.post(
+        response = self.session.post(
             uri, data=file_data,
             headers={'content-type': 'application/octet-stream'},
             **self.request_extra_opts
@@ -204,7 +205,7 @@ class PyWebHdfsClient(object):
 
         optional_args = kwargs
 
-        response = self._resolve_host(requests.get, True,
+        response = self._resolve_host(self.session.get, True,
                                       path, operations.OPEN,
                                       **optional_args)
         if not response.status_code == http_client.OK:
@@ -239,7 +240,7 @@ class PyWebHdfsClient(object):
 
         optional_args = kwargs
 
-        response = self._resolve_host(requests.get, True,
+        response = self._resolve_host(self.session.get, True,
                                       path, operations.OPEN, stream=True,
                                       **optional_args)
         if not response.status_code == http_client.OK:
@@ -274,7 +275,7 @@ class PyWebHdfsClient(object):
 
         optional_args = kwargs
 
-        response = self._resolve_host(requests.put, True,
+        response = self._resolve_host(self.session.put, True,
                                       path, operations.MKDIRS,
                                       **optional_args)
         if not response.status_code == http_client.OK:
@@ -303,7 +304,7 @@ class PyWebHdfsClient(object):
 
         destination_path = '/' + destination_path.lstrip('/')
 
-        response = self._resolve_host(requests.put, True,
+        response = self._resolve_host(self.session.put, True,
                                       path, operations.RENAME,
                                       destination=destination_path)
         if not response.status_code == http_client.OK:
@@ -334,7 +335,7 @@ class PyWebHdfsClient(object):
         >>> hdfs.delete_file_dir(my_file, recursive=True)
         """
 
-        response = self._resolve_host(requests.delete, True,
+        response = self._resolve_host(self.session.delete, True,
                                       path, operations.DELETE,
                                       recursive=recursive)
         if not response.status_code == http_client.OK:
@@ -392,7 +393,7 @@ class PyWebHdfsClient(object):
         }
         """
 
-        response = self._resolve_host(requests.get, True,
+        response = self._resolve_host(self.session.get, True,
                                       path, operations.GETFILESTATUS)
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
@@ -427,7 +428,7 @@ class PyWebHdfsClient(object):
         }
         """
 
-        response = self._resolve_host(requests.get, True,
+        response = self._resolve_host(self.session.get, True,
                                       path, operations.GETCONTENTSUMMARY)
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
@@ -458,7 +459,7 @@ class PyWebHdfsClient(object):
         }
         """
 
-        response = self._resolve_host(requests.get, True,
+        response = self._resolve_host(self.session.get, True,
                                       path, operations.GETFILECHECKSUM)
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
@@ -513,7 +514,7 @@ class PyWebHdfsClient(object):
 
         """
 
-        response = self._resolve_host(requests.get, True,
+        response = self._resolve_host(self.session.get, True,
                                       path, operations.LISTSTATUS)
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
@@ -539,7 +540,7 @@ class PyWebHdfsClient(object):
         >>> hdfs.exists_file_dir(my_file)
         True
         """
-        response = self._resolve_host(requests.get, True,
+        response = self._resolve_host(self.session.get, True,
                                       path, operations.GETFILESTATUS)
         if response.status_code == http_client.OK:
             return True
@@ -577,7 +578,7 @@ class PyWebHdfsClient(object):
         if xattr:
             kwd_params['xattr.name'] = xattr
 
-        response = self._resolve_host(requests.get, True,
+        response = self._resolve_host(self.session.get, True,
                                       path, operations.GETXATTRS,
                                       **kwd_params)
 
@@ -614,7 +615,7 @@ class PyWebHdfsClient(object):
         else:
             kwd_params['flag'] = "CREATE"
 
-        response = self._resolve_host(requests.put, True,
+        response = self._resolve_host(self.session.put, True,
                                       path, operations.SETXATTR,
                                       **kwd_params)
 
@@ -640,7 +641,7 @@ class PyWebHdfsClient(object):
             "XAttrNames": "[\"XATTRNAME1\",\"XATTRNAME2\",\"XATTRNAME3\"]"
         }
         """
-        response = self._resolve_host(requests.get, True,
+        response = self._resolve_host(self.session.get, True,
                                       path, operations.LISTXATTRS)
 
         if not response.status_code == http_client.OK:
@@ -669,7 +670,7 @@ class PyWebHdfsClient(object):
             'xattr.name': xattr
         }
 
-        response = self._resolve_host(requests.put, True,
+        response = self._resolve_host(self.session.put, True,
                                       path, operations.REMOVEXATTR,
                                       **kwd_params)
 
