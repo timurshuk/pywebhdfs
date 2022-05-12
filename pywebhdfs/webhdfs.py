@@ -112,6 +112,7 @@ class PyWebHdfsClient(object):
         uri = init_response.headers['location']
         response = self.session.put(
             uri, data=file_data,
+            timeout=self.timeout,
             headers={'content-type': 'application/octet-stream'},
             **self.request_extra_opts)
 
@@ -169,6 +170,7 @@ class PyWebHdfsClient(object):
         uri = init_response.headers['location']
         response = self.session.post(
             uri, data=file_data,
+            timeout=self.timeout,
             headers={'content-type': 'application/octet-stream'},
             **self.request_extra_opts
         )
